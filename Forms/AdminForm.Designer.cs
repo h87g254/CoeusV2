@@ -15,6 +15,12 @@
         private System.Windows.Forms.Button addToSubtopicButton;
         private System.Windows.Forms.DataGridView dataGridView;
         private System.Windows.Forms.ComboBox tableComboBox;
+        private System.Windows.Forms.TextBox followUpQuestionTextBox;
+        private System.Windows.Forms.Button addFollowUpQuestionButton;
+        private System.Windows.Forms.TextBox positiveResponseTextBox;
+        private System.Windows.Forms.Button addPositiveResponseButton;
+        private System.Windows.Forms.TextBox negativeResponseTextBox;
+        private System.Windows.Forms.Button addNegativeResponseButton;
         private System.ComponentModel.IContainer components = null;
 
         protected override void Dispose(bool disposing)
@@ -41,6 +47,12 @@
             addToSubtopicButton = new Button();
             dataGridView = new DataGridView();
             tableComboBox = new ComboBox();
+            followUpQuestionTextBox = new TextBox();
+            addFollowUpQuestionButton = new Button();
+            positiveResponseTextBox = new TextBox();
+            addPositiveResponseButton = new Button();
+            negativeResponseTextBox = new TextBox();
+            addNegativeResponseButton = new Button();
             ((System.ComponentModel.ISupportInitialize)dataGridView).BeginInit();
             SuspendLayout();
             // 
@@ -176,7 +188,7 @@
             // 
             dataGridView.BackgroundColor = Color.White;
             dataGridView.Font = new Font("Segoe UI", 10F, FontStyle.Regular, GraphicsUnit.Point);
-            dataGridView.Location = new Point(12, 187);
+            dataGridView.Location = new Point(12, 328);
             dataGridView.Name = "dataGridView";
             dataGridView.Size = new Size(559, 200);
             dataGridView.TabIndex = 10;
@@ -187,16 +199,91 @@
             tableComboBox.DropDownStyle = ComboBoxStyle.DropDownList;
             tableComboBox.Font = new Font("Segoe UI", 10F, FontStyle.Regular, GraphicsUnit.Point);
             tableComboBox.ForeColor = Color.Black;
-            tableComboBox.Location = new Point(12, 156);
+            tableComboBox.Location = new Point(12, 297);
             tableComboBox.Name = "tableComboBox";
             tableComboBox.Size = new Size(260, 25);
             tableComboBox.TabIndex = 11;
             tableComboBox.SelectedIndexChanged += TableComboBox_SelectedIndexChanged;
             // 
+            // followUpQuestionTextBox
+            // 
+            followUpQuestionTextBox.BackColor = Color.White;
+            followUpQuestionTextBox.Font = new Font("Segoe UI", 10F, FontStyle.Regular, GraphicsUnit.Point);
+            followUpQuestionTextBox.ForeColor = Color.Black;
+            followUpQuestionTextBox.Location = new Point(311, 157);
+            followUpQuestionTextBox.Name = "followUpQuestionTextBox";
+            followUpQuestionTextBox.PlaceholderText = "Follow-up Question";
+            followUpQuestionTextBox.Size = new Size(260, 25);
+            followUpQuestionTextBox.TabIndex = 10;
+            // 
+            // addFollowUpQuestionButton
+            // 
+            addFollowUpQuestionButton.BackColor = Color.DodgerBlue;
+            addFollowUpQuestionButton.ForeColor = Color.White;
+            addFollowUpQuestionButton.FlatStyle = FlatStyle.Flat;
+            addFollowUpQuestionButton.Font = new Font("Segoe UI", 10F, FontStyle.Regular, GraphicsUnit.Point);
+            addFollowUpQuestionButton.Location = new Point(311, 188);
+            addFollowUpQuestionButton.Name = "addFollowUpQuestionButton";
+            addFollowUpQuestionButton.Size = new Size(115, 30);
+            addFollowUpQuestionButton.TabIndex = 11;
+            addFollowUpQuestionButton.Text = "Add Question";
+            addFollowUpQuestionButton.UseVisualStyleBackColor = false;
+            addFollowUpQuestionButton.Click += AddFollowUpQuestionButton_Click;
+            // 
+            // positiveResponseTextBox
+            // 
+            positiveResponseTextBox.BackColor = Color.White;
+            positiveResponseTextBox.Font = new Font("Segoe UI", 10F, FontStyle.Regular, GraphicsUnit.Point);
+            positiveResponseTextBox.ForeColor = Color.Black;
+            positiveResponseTextBox.Location = new Point(12, 131);
+            positiveResponseTextBox.Name = "positiveResponseTextBox";
+            positiveResponseTextBox.PlaceholderText = "Positive Response";
+            positiveResponseTextBox.Size = new Size(200, 25);
+            positiveResponseTextBox.TabIndex = 12;
+            // 
+            // addPositiveResponseButton
+            // 
+            addPositiveResponseButton.BackColor = Color.DodgerBlue;
+            addPositiveResponseButton.ForeColor = Color.White;
+            addPositiveResponseButton.FlatStyle = FlatStyle.Flat;
+            addPositiveResponseButton.Font = new Font("Segoe UI", 10F, FontStyle.Regular, GraphicsUnit.Point);
+            addPositiveResponseButton.Location = new Point(12, 161);
+            addPositiveResponseButton.Name = "addPositiveResponseButton";
+            addPositiveResponseButton.Size = new Size(115, 30);
+            addPositiveResponseButton.TabIndex = 13;
+            addPositiveResponseButton.Text = "Add Positive";
+            addPositiveResponseButton.UseVisualStyleBackColor = false;
+            addPositiveResponseButton.Click += AddPositiveResponseButton_Click;
+            // 
+            // negativeResponseTextBox
+            // 
+            negativeResponseTextBox.BackColor = Color.White;
+            negativeResponseTextBox.Font = new Font("Segoe UI", 10F, FontStyle.Regular, GraphicsUnit.Point);
+            negativeResponseTextBox.ForeColor = Color.Black;
+            negativeResponseTextBox.Location = new Point(12, 197);
+            negativeResponseTextBox.Name = "negativeResponseTextBox";
+            negativeResponseTextBox.PlaceholderText = "Negative Response";
+            negativeResponseTextBox.Size = new Size(200, 25);
+            negativeResponseTextBox.TabIndex = 14;
+            // 
+            // addNegativeResponseButton
+            // 
+            addNegativeResponseButton.BackColor = Color.DodgerBlue;
+            addNegativeResponseButton.ForeColor = Color.White;
+            addNegativeResponseButton.FlatStyle = FlatStyle.Flat;
+            addNegativeResponseButton.Font = new Font("Segoe UI", 10F, FontStyle.Regular, GraphicsUnit.Point);
+            addNegativeResponseButton.Location = new Point(12, 228);
+            addNegativeResponseButton.Name = "addNegativeResponseButton";
+            addNegativeResponseButton.Size = new Size(115, 30);
+            addNegativeResponseButton.TabIndex = 15;
+            addNegativeResponseButton.Text = "Add Negative";
+            addNegativeResponseButton.UseVisualStyleBackColor = false;
+            addNegativeResponseButton.Click += AddNegativeResponseButton_Click;
+            // 
             // AdminForm
             // 
             BackColor = Color.White;
-            ClientSize = new Size(584, 400);
+            ClientSize = new Size(586, 540);
             Controls.Add(categoryComboBox);
             Controls.Add(keywordTextBox);
             Controls.Add(responseTextBox);
@@ -209,6 +296,12 @@
             Controls.Add(addSubtopicButton);
             Controls.Add(dataGridView);
             Controls.Add(tableComboBox);
+            Controls.Add(followUpQuestionTextBox);
+            Controls.Add(addFollowUpQuestionButton);
+            Controls.Add(positiveResponseTextBox);
+            Controls.Add(addPositiveResponseButton);
+            Controls.Add(negativeResponseTextBox);
+            Controls.Add(addNegativeResponseButton);
             Name = "AdminForm";
             Text = "Admin Panel";
             ((System.ComponentModel.ISupportInitialize)dataGridView).EndInit();

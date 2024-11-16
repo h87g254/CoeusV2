@@ -30,7 +30,11 @@ namespace CoeusV2.Forms
         private void LoadTopics()
         {
             var topics = database.GetTopics();
-            topicComboBox.Items.AddRange(topics.ToArray());
+            topicComboBox.Items.Clear();
+            foreach (var topic in topics)
+            {
+                topicComboBox.Items.Add($"{topic.Id}: {topic.Name}");
+            }
         }
 
         // Loads table names from the database
@@ -50,8 +54,11 @@ namespace CoeusV2.Forms
         // Event handler for table combo box selection change
         private void TableComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
-            var selectedTable = tableComboBox.SelectedItem.ToString();
-            LoadTableData(selectedTable);
+            var selectedTable = tableComboBox.SelectedItem?.ToString();
+            if (!string.IsNullOrEmpty(selectedTable))
+            {
+                LoadTableData(selectedTable);
+            }
         }
 
         // Event handler for category combo box selection change
@@ -125,25 +132,90 @@ namespace CoeusV2.Forms
         // Event handler for Add to Subtopic button click
         private void AddToSubtopicButton_Click(object sender, EventArgs e)
         {
-            string topic = topicComboBox.Text;
-            string subtopic = subtopicTextBox.Text;
-            string text = subtopicDescriptionTextBox.Text;
-
-            if (!string.IsNullOrEmpty(topic) && !string.IsNullOrEmpty(subtopic) && !string.IsNullOrEmpty(text))
+            string selectedTopic = topicComboBox.Text;
+            if (!string.IsNullOrEmpty(selectedTopic))
             {
-                database.AddSubtopic(topic, subtopic, text);
-                MessageBox.Show("Subtopic added successfully!");
-                subtopicTextBox.Clear();
-                subtopicDescriptionTextBox.Clear();
+                // Parse the TopicId from the selected item
+                var parts = selectedTopic.Split(':');
+                if (parts.Length > 1 && int.TryParse(parts[0], out int topicId))
+                {
+                    string subtopic = subtopicTextBox.Text;
+                    string text = subtopicDescriptionTextBox.Text;
+
+                    if (!string.IsNullOrEmpty(subtopic) && !string.IsNullOrEmpty(text))
+                    {
+                        database.AddSubtopic(topicId, subtopic, text);
+                        MessageBox.Show("Subtopic added successfully!");
+                        subtopicTextBox.Clear();
+                        subtopicDescriptionTextBox.Clear();
+                    }
+                    else
+                    {
+                        MessageBox.Show("Please fill in all fields.");
+                    }
+                }
+                else
+                {
+                    MessageBox.Show("Invalid topic.");
+                }
             }
             else
             {
-                MessageBox.Show("Please fill in all fields.");
+                MessageBox.Show("Please select a topic.");
+            }
+        }
+
+
+        private void AddFollowUpQuestionButton_Click(object sender, EventArgs e)
+        {
+            string question = followUpQuestionTextBox.Text;
+
+            if (!string.IsNullOrEmpty(question))
+            {
+                database.AddFollowUpQuestion(question);
+                MessageBox.Show("Follow-up question added successfully!");
+                followUpQuestionTextBox.Clear();
+            }
+            else
+            {
+                MessageBox.Show("Please fill in the question.");
+            }
+        }
+
+        private void AddPositiveResponseButton_Click(object sender, EventArgs e)
+        {
+            string response = positiveResponseTextBox.Text;
+
+            if (!string.IsNullOrEmpty(response))
+            {
+                database.AddPositiveResponse(response);
+                MessageBox.Show("Positive response added successfully!");
+                positiveResponseTextBox.Clear();
+            }
+            else
+            {
+                MessageBox.Show("Please fill in the response.");
+            }
+        }
+
+        private void AddNegativeResponseButton_Click(object sender, EventArgs e)
+        {
+            string response = negativeResponseTextBox.Text;
+
+            if (!string.IsNullOrEmpty(response))
+            {
+                database.AddNegativeResponse(response);
+                MessageBox.Show("Negative response added successfully!");
+                negativeResponseTextBox.Clear();
+            }
+            else
+            {
+                MessageBox.Show("Please fill in the response.");
             }
         }
 
         // Event handler for database data updated event
-        private void ChatBotDatabase_DataUpdated(object sender, EventArgs e)
+        private void ChatBotDatabase_DataUpdated(object? sender, EventArgs e)
         {
             LoadTableData();
         }
@@ -154,5 +226,20 @@ namespace CoeusV2.Forms
             var dataTable = database.GetTableData("Categories");
             dataGridView.DataSource = dataTable;
         }
+
+/*        private int GetTopicIdByName(string topicName)
+        {
+            var topics = database.GetTopics();
+            foreach (var topic in topics)
+            {
+                if (topic.Equals(topicName, StringComparison.OrdinalIgnoreCase))
+                {
+                    // Assuming the topic name is unique and we can fetch the TopicId
+                    // You might need to adjust this based on your actual data structure
+                    return topics.IndexOf(topic) + 1; // Assuming TopicId is 1-based index
+                }
+            }
+            return -1; // Topic not found
+        }*/
     }
 }

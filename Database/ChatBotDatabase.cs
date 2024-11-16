@@ -54,9 +54,28 @@ namespace CoeusV2.Database
                     command = new SQLiteCommand(
                         "CREATE TABLE Subtopics (" +
                         "Id INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                        "Topic TEXT NOT NULL, " +
+                        "Topic INTEGER NOT NULL, " +
                         "Subtopic TEXT NOT NULL, " +
-                        "Text TEXT NOT NULL)", connection);
+                        "Text TEXT NOT NULL, " +
+                        "FOREIGN KEY (Topic) REFERENCES Topics(Topic))", connection);
+                    command.ExecuteNonQuery();
+
+                    command = new SQLiteCommand(
+                        "CREATE TABLE IF NOT EXISTS NegativeResponses (" +
+                        "Id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                        "Response TEXT NOT NULL)", connection);
+                    command.ExecuteNonQuery();
+
+                    command = new SQLiteCommand(
+                        "CREATE TABLE IF NOT EXISTS PositiveResponses (" +
+                        "Id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                        "Response TEXT NOT NULL)", connection);
+                    command.ExecuteNonQuery();
+
+                    command = new SQLiteCommand(
+                        "CREATE TABLE IF NOT EXISTS FollowUpQuestions (" +
+                        "Id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                        "Question TEXT NOT NULL)", connection);
                     command.ExecuteNonQuery();
                 }
             }
@@ -78,13 +97,13 @@ namespace CoeusV2.Database
         }
 
         // Adds a subtopic to the database
-        public void AddSubtopic(string topic, string subtopic, string text)
+        public void AddSubtopic(int topicId, string subtopic, string text)
         {
             using (var connection = new SQLiteConnection(connectionString))
             {
                 connection.Open();
-                var command = new SQLiteCommand($"INSERT INTO Subtopics (Topic, Subtopic, Text) VALUES (@topic, @subtopic, @text)", connection);
-                command.Parameters.AddWithValue("@topic", topic);
+                var command = new SQLiteCommand("INSERT INTO Subtopics (Topic, Subtopic, Text) VALUES (@topic, @subtopic, @text)", connection);
+                command.Parameters.AddWithValue("@topic", topicId);
                 command.Parameters.AddWithValue("@subtopic", subtopic);
                 command.Parameters.AddWithValue("@text", text);
                 command.ExecuteNonQuery();
@@ -92,6 +111,7 @@ namespace CoeusV2.Database
 
             OnDataUpdated();
         }
+
 
         // Gets a response for a given user input based on topics
         public string GetTopicResponse(string userInput)
@@ -183,6 +203,107 @@ namespace CoeusV2.Database
             OnDataUpdated();
         }
 
+        public string GetSubtopicResponse(string subtopic)
+        {
+            using (var connection = new SQLiteConnection(connectionString))
+            {
+                connection.Open();
+                var command = new SQLiteCommand("SELECT Text FROM Subtopics WHERE Subtopic = @subtopic ORDER BY RANDOM() LIMIT 1", connection);
+                command.Parameters.AddWithValue("@subtopic", subtopic);
+                var result = command.ExecuteScalar();
+                return result?.ToString() ?? string.Empty;
+            }
+        }
+
+        public void AddFollowUpQuestion(string question)
+        {
+            using (var connection = new SQLiteConnection(connectionString))
+            {
+                connection.Open();
+                var command = new SQLiteCommand("INSERT INTO FollowUpQuestions (Question) VALUES (@question)", connection);
+                command.Parameters.AddWithValue("@question", question);
+                command.ExecuteNonQuery();
+            }
+        }
+
+        public void AddPositiveResponse(string response)
+        {
+            using (var connection = new SQLiteConnection(connectionString))
+            {
+                connection.Open();
+                var command = new SQLiteCommand("INSERT INTO PositiveResponses (Response) VALUES (@response)", connection);
+                command.Parameters.AddWithValue("@response", response);
+                command.ExecuteNonQuery();
+            }
+        }
+
+        public void AddNegativeResponse(string response)
+        {
+            using (var connection = new SQLiteConnection(connectionString))
+            {
+                connection.Open();
+                var command = new SQLiteCommand("INSERT INTO NegativeResponses (Response) VALUES (@response)", connection);
+                command.Parameters.AddWithValue("@response", response);
+                command.ExecuteNonQuery();
+            }
+        }
+
+        public string GetFollowUpQuestion()
+        {
+            using (var connection = new SQLiteConnection(connectionString))
+            {
+                connection.Open();
+                var command = new SQLiteCommand("SELECT Question FROM FollowUpQuestions ORDER BY RANDOM() LIMIT 1", connection);
+                var result = command.ExecuteScalar();
+                return result?.ToString() ?? string.Empty;
+            }
+        }
+
+        public List<string> GetPositiveResponses()
+        {
+            var responses = new List<string>();
+            using (var connection = new SQLiteConnection(connectionString))
+            {
+                connection.Open();
+                var command = new SQLiteCommand("SELECT Response FROM PositiveResponses", connection);
+                var reader = command.ExecuteReader();
+                while (reader.Read())
+                {
+                    responses.Add(reader.GetString(0));
+                }
+            }
+            return responses;
+        }
+
+        public List<string> GetNegativeResponses()
+        {
+            var responses = new List<string>();
+            using (var connection = new SQLiteConnection(connectionString))
+            {
+                connection.Open();
+                var command = new SQLiteCommand("SELECT Response FROM NegativeResponses", connection);
+                var reader = command.ExecuteReader();
+                while (reader.Read())
+                {
+                    responses.Add(reader.GetString(0));
+                }
+            }
+            return responses;
+        }
+
+        public string GetNegativeResponse()
+        {
+            var negativeResponses = GetNegativeResponses();
+            if (negativeResponses != null && negativeResponses.Count > 0)
+            {
+                // Return a random negative response
+                Random random = new Random();
+                int index = random.Next(negativeResponses.Count);
+                return negativeResponses[index];
+            }
+            return "I don't have a negative response at the moment.";
+        }
+
         // Gets a response for a given keyword based on categories
         public string GetCategoriesResponse(string keyword)
         {
@@ -248,17 +369,17 @@ namespace CoeusV2.Database
         }
 
         // Gets a list of topics from the database
-        public List<string> GetTopics()
+        public List<(int Id, string Name)> GetTopics()
         {
-            var topics = new List<string>();
+            var topics = new List<(int Id, string Name)>();
             using (var connection = new SQLiteConnection(connectionString))
             {
                 connection.Open();
-                var command = new SQLiteCommand("SELECT Topic FROM Topics", connection);
+                var command = new SQLiteCommand("SELECT Id, Topic FROM Topics", connection);
                 var reader = command.ExecuteReader();
                 while (reader.Read())
                 {
-                    topics.Add(reader.GetString(0));
+                    topics.Add((reader.GetInt32(0), reader.GetString(1)));
                 }
             }
             return topics;

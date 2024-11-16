@@ -73,6 +73,7 @@ namespace CoeusV2.Forms
 
         }
 
+        private string currentTopic = string.Empty;
         // Handles the Send button click event to send a message
         private async void SendMessage()
         {
@@ -93,22 +94,55 @@ namespace CoeusV2.Forms
             flowLayoutPanel.ScrollControlIntoView(typingIndicator); // Auto-scroll to the typing indicator
             await Task.Delay(2500); // Simulate typing delay
 
-            string categoriesResponse = database.GetCategoriesResponse(userInput);
-            string topicResponse = database.GetTopicResponse(userInput);
-
             string botResponse = string.Empty;
 
-            if (!string.IsNullOrEmpty(categoriesResponse) && string.IsNullOrEmpty(topicResponse))
+            if (!string.IsNullOrEmpty(currentTopic))
             {
-                botResponse = categoriesResponse;
-            }
-            else if (!string.IsNullOrEmpty(topicResponse) && string.IsNullOrEmpty(categoriesResponse))
-            {
-                botResponse = topicResponse;
+                // Check if the user response is positive or negative
+                if (IsPositiveResponse(userInput))
+                {
+                    // Get subtopic response
+                    string subtopicResponse = database.GetSubtopicResponse(currentTopic);
+                    if (!string.IsNullOrEmpty(subtopicResponse))
+                    {
+                        botResponse = subtopicResponse;
+                    }
+                    else
+                    {
+                        botResponse = "I don't have more information on this topic.";
+                    }
+                }
+                else if (IsNegativeResponse(userInput))
+                {
+                    botResponse = "Okay, let me know if you have any other questions.";
+                    currentTopic = string.Empty; // Reset current topic
+                }
             }
             else
             {
-                botResponse = "I don't understand.";
+                string categoriesResponse = database.GetCategoriesResponse(userInput);
+                string topicResponse = database.GetTopicResponse(userInput);
+
+                if (!string.IsNullOrEmpty(categoriesResponse) && string.IsNullOrEmpty(topicResponse))
+                {
+                    botResponse = categoriesResponse;
+                }
+                else if (!string.IsNullOrEmpty(topicResponse) && string.IsNullOrEmpty(categoriesResponse))
+                {
+                    botResponse = topicResponse;
+                    currentTopic = userInput; // Set current topic
+
+                    // Append follow-up question to the topic response
+                    string followUpQuestion = database.GetFollowUpQuestion();
+                    if (!string.IsNullOrEmpty(followUpQuestion))
+                    {
+                        botResponse += "\n\n" + followUpQuestion;
+                    }
+                }
+                else
+                {
+                    botResponse = "I don't understand.";
+                }
             }
 
             // Remove typing indicator
@@ -117,6 +151,18 @@ namespace CoeusV2.Forms
             AddMessageToChat("Coeus", botResponse, Color.LightGray, Color.Black);
 
             userInputTextBox.Clear();
+        }
+
+        private bool IsPositiveResponse(string userInput)
+        {
+            var positiveResponses = database.GetPositiveResponses();
+            return positiveResponses.Any(response => userInput.ToLower().Contains(response.ToLower()));
+        }
+
+        private bool IsNegativeResponse(string userInput)
+        {
+            var negativeResponses = database.GetNegativeResponses();
+            return negativeResponses.Any(response => userInput.ToLower().Contains(response.ToLower()));
         }
 
         private void AddMessageToChat(string sender, string message, Color backColor, Color foreColor)
