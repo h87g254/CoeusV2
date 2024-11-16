@@ -50,6 +50,14 @@ namespace CoeusV2.Database
                         "Keyword TEXT NOT NULL, " +
                         "Response TEXT NOT NULL)", connection);
                     command.ExecuteNonQuery();
+
+                    command = new SQLiteCommand(
+                        "CREATE TABLE Subtopics (" +
+                        "Id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                        "Topic TEXT NOT NULL, " +
+                        "Subtopic TEXT NOT NULL, " +
+                        "Text TEXT NOT NULL)", connection);
+                    command.ExecuteNonQuery();
                 }
             }
         }
@@ -64,12 +72,6 @@ namespace CoeusV2.Database
                 command.Parameters.AddWithValue("@topic", topic);
                 command.Parameters.AddWithValue("@text", text);
                 command.ExecuteNonQuery();
-
-                // Create a table for the subtopics of this topic
-                var createTableCommand = new SQLiteCommand($"CREATE TABLE [{topic} Subtopics] (" +
-                                                           "Subtopic TEXT NOT NULL, " +
-                                                           "Text TEXT NOT NULL)", connection);
-                createTableCommand.ExecuteNonQuery();
             }
 
             OnDataUpdated();
@@ -81,7 +83,8 @@ namespace CoeusV2.Database
             using (var connection = new SQLiteConnection(connectionString))
             {
                 connection.Open();
-                var command = new SQLiteCommand($"INSERT INTO [{topic} Subtopics] (Subtopic, Text) VALUES (@subtopic, @text)", connection);
+                var command = new SQLiteCommand($"INSERT INTO Subtopics (Topic, Subtopic, Text) VALUES (@topic, @subtopic, @text)", connection);
+                command.Parameters.AddWithValue("@topic", topic);
                 command.Parameters.AddWithValue("@subtopic", subtopic);
                 command.Parameters.AddWithValue("@text", text);
                 command.ExecuteNonQuery();
@@ -118,32 +121,26 @@ namespace CoeusV2.Database
                     }
                 }
 
-                if (closestTopic != null)
+                if (!string.IsNullOrEmpty(closestTopic))
                 {
                     command = new SQLiteCommand("SELECT Text FROM Topics WHERE Topic = @topic", connection);
                     command.Parameters.AddWithValue("@topic", closestTopic);
                     var topicText = command.ExecuteScalar()?.ToString();
 
-                    if (topicText != null)
+                    if (!string.IsNullOrEmpty(topicText))
                     {
                         return topicText;
                     }
-                }
 
-                // Check for subtopics
-                command = new SQLiteCommand("SELECT name FROM sqlite_master WHERE type='table' AND name LIKE @tableName", connection);
-                command.Parameters.AddWithValue("@tableName", userInput + " Subtopics");
-                var tableName = command.ExecuteScalar()?.ToString();
-
-                if (tableName != null)
-                {
-                    command = new SQLiteCommand($"SELECT Subtopic FROM [{tableName}]", connection);
+                    // Check for subtopics
+                    command = new SQLiteCommand("SELECT Subtopic, Text FROM Subtopics WHERE Topic = @topic", connection);
+                    command.Parameters.AddWithValue("@topic", closestTopic);
                     reader = command.ExecuteReader();
-                    var subtopics = new List<string>();
+                    var subtopics = new List<(string Subtopic, string Text)>();
 
                     while (reader.Read())
                     {
-                        subtopics.Add(reader.GetString(0));
+                        subtopics.Add((reader.GetString(0), reader.GetString(1)));
                     }
 
                     string closestSubtopic = string.Empty;
@@ -151,30 +148,24 @@ namespace CoeusV2.Database
 
                     foreach (var subtopic in subtopics)
                     {
-                        int distance = LevenshteinDistance.Compute(userInput, subtopic);
+                        int distance = LevenshteinDistance.Compute(userInput, subtopic.Subtopic);
                         if (distance < minDistance)
                         {
                             minDistance = distance;
-                            closestSubtopic = subtopic;
+                            closestSubtopic = subtopic.Text;
                         }
                     }
 
-                    if (closestSubtopic != null)
+                    if (!string.IsNullOrEmpty(closestSubtopic))
                     {
-                        command = new SQLiteCommand($"SELECT Text FROM [{tableName}] WHERE Subtopic = @subtopic", connection);
-                        command.Parameters.AddWithValue("@subtopic", closestSubtopic);
-                        var subtopicText = command.ExecuteScalar()?.ToString();
-
-                        if (subtopicText != null)
-                        {
-                            return subtopicText;
-                        }
+                        return closestSubtopic;
                     }
                 }
 
                 return string.Empty;
             }
         }
+
 
         // Adds a response to the database
         public void AddResponse(string category, string keyword, string response)
@@ -231,7 +222,7 @@ namespace CoeusV2.Database
                         command = new SQLiteCommand("SELECT Response FROM Categories WHERE Category = @category ORDER BY RANDOM() LIMIT 1", connection);
                         command.Parameters.AddWithValue("@category", category);
                         var response = command.ExecuteScalar();
-                        return response?.ToString()?? string.Empty;
+                        return response?.ToString() ?? string.Empty;
                     }
                 }
 
@@ -286,7 +277,7 @@ namespace CoeusV2.Database
                 foreach (DataRow row in tables.Rows)
                 {
                     var tableName = row["TABLE_NAME"]?.ToString();
-                    if (tableName != null) 
+                    if (tableName != null)
                     {
                         tableNames.Add(tableName);
                     }
