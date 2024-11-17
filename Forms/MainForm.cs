@@ -168,6 +168,7 @@ namespace CoeusV2.Forms
         private void AddMessageToChat(string sender, string message, Color backColor, Color foreColor)
         {
             if (string.IsNullOrEmpty(sender)) throw new ArgumentException("Sender cannot be null or empty", nameof(sender));
+            /*MessageBox.Show(message);*/
             if (string.IsNullOrEmpty(message)) throw new ArgumentException("Message cannot be null or empty", nameof(message));
 
             const int charLimit = 70;
@@ -182,7 +183,7 @@ namespace CoeusV2.Forms
             }
             formattedMessage.AppendLine(message);
 
-            string timestamp = DateTime.Now.ToString("HH:mm:ss");
+            string timestamp = DateTime.Now.ToString("HH:mm");
             Label messageLabel = new Label
             {
                 AutoSize = true,

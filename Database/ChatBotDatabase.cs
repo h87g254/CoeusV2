@@ -211,9 +211,10 @@ namespace CoeusV2.Database
                 var command = new SQLiteCommand("SELECT Text FROM Subtopics WHERE Subtopic = @subtopic ORDER BY RANDOM() LIMIT 1", connection);
                 command.Parameters.AddWithValue("@subtopic", subtopic);
                 var result = command.ExecuteScalar();
-                return result?.ToString() ?? string.Empty;
+                return result?.ToString() ?? "I don't have more information on this subtopic.";
             }
         }
+
 
         public void AddFollowUpQuestion(string question)
         {
@@ -289,6 +290,19 @@ namespace CoeusV2.Database
                 }
             }
             return responses;
+        }
+
+        public string GetPositiveResponse()
+        {
+            var positiveResponses = GetPositiveResponses();
+            if (positiveResponses != null && positiveResponses.Count > 0)
+            {
+                // Return a random positive response
+                Random random = new Random();
+                int index = random.Next(positiveResponses.Count);
+                return positiveResponses[index];
+            }
+            return "I don't have a positive response at the moment.";
         }
 
         public string GetNegativeResponse()
